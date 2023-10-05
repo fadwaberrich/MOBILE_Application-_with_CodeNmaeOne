@@ -1,0 +1,122 @@
+A faire :
+dans codename1
+
+creer un fichier ENTITY (class) dans /com.mycompany.entity
+creer un fichier ServiceProduit* (class) dans /com.mycompany.Services dans lequel vous creer les fonctions (CRUD) avec url de symphony
+creer les fichiers Affichage/ajout/modif (les GUI) dans /com.mycompany.myapp dans lequel vous creer l'interface a afficher
+
+dans controller Symphony vous ajouter les methodes suivantes 
+
+    /********************Json for Emplacement**********************/
+    /**
+     * @Route("/displayEmplacement",name="displayEmplacement")
+     */
+    public function displayEmplacement(){
+
+        $Emplacement = $this->getDoctrine()->getManager()->getRepository(Emplacement::class)->findAll();
+        $serializer = new Serializer([new ObjectNormalizer()]);
+        $formatted = $serializer->normalize($Emplacement);
+        return  new JsonResponse($formatted);
+    }
+/*********************************JSON for add***************************************************/
+    /**
+     * @Route("/AjouterProduit",name="AjouterProduit")
+     */
+    public function AjouterProduit(Request $request){
+        $prod = new Produit();
+        $libelle = $request->query->get("libelle");
+        $description = $request->query->get("description");
+        $type = $request->query->get("type");
+        $prix = $request->query->get("prix");
+        $image = $request->query->get("image");
+
+        $em =$this->getDoctrine()->getManager();
+
+        $prod->setLibelle($libelle);
+        $prod->setDescription($description);
+        $prod->setType($type);
+        $prod->setPrix($prix);
+        $prod->setImage($image);
+        /*if ($imageFile) {
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $newFilename = $originalFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            try {
+                $imageFile->move(
+                    'img\bike',
+                    $newFilename
+                );
+            } catch (FileException $e) {
+            }
+            $Produit->setImage($newFilename);
+        }*/
+
+        $em->persist($prod);
+        $em->flush();
+
+        $serializer = new Serializer([new ObjectNormalizer()]);
+        $formatted = $serializer->normalize($prod);
+        return  new JsonResponse($formatted);
+    }
+
+    /******************JSON delete Produit*****************************************/
+    /**
+     * @Route("/deleteProd/{id}", name="deleteProd")
+     */
+
+    public function deleteProd(Request $request) {
+        $id = $request->get("id");
+
+        $em = $this->getDoctrine()->getManager();
+        $prod = $em->getRepository(Produit::class)->find($id);
+        if($prod!=null ) {
+            $em->remove($prod);
+            $em->flush();
+
+            $serialize = new Serializer([new ObjectNormalizer()]);
+            $formatted = $serialize->normalize("Produit a ete supprimee avec success.");
+            return new JsonResponse($formatted);
+
+        }
+        return new JsonResponse("id Produit invalide.");
+    }
+
+    /*************************************JSON UPDATE produit*******************************************************/
+
+    /******************Modifier Reclamation*****************************************/
+    /**
+     * @Route("/updateProduit", name="updateProduit")
+     */
+    public function updateProduit(Request $request) {
+        $em = $this->getDoctrine()->getManager();
+        $prod = $this->getDoctrine()->getManager()
+            ->getRepository(Produit::class)
+            ->find($request->get("id"));
+
+        $libelle = $request->query->get("libelle");
+        $image = $request->query->get("image");
+        $description = $request->query->get("description");
+        $prix = $request->query->get("prix");
+        $type = $request->query->get("type");
+
+        $prod->setLibelle($libelle);
+        $prod->setImage($image);
+        $prod->setDescription($description);
+        $prod->setPrix($prix);
+        $prod->setType($type);
+
+        $em->persist($prod);
+        $em->flush();
+        $serializer = new Serializer([new ObjectNormalizer()]);
+        $formatted = $serializer->normalize($prod);
+        return new JsonResponse("Produit a ete modifiee avec success.");
+
+    }
+
+
+/****************************************************/
+String DateConverter = obj.get("date").toString().substring(obj.get("date").toString().toString().indexOf("timestamp") + 10, obj.get("obj").toString().lastIndexOf("}"));
+ Date currentTime = new Date(Double.valueOf(DateConverter).longValue() * 1000);
+
+SimpleDateFormat formatter = new SimpleDateFormat ("yyyy-MM-dd");
+String dateString = formatter.format(currentTime);
+event.setDateD(dateString);
